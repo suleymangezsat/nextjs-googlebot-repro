@@ -48,7 +48,6 @@
     "concurrently": "^9.1.2",
     "date-fns": "^3.6.0",
     "embla-carousel-react": "^8.0.0",
-    "lucide-react": "^0.358.0",
     "marked": "^15.0.6",
     "next": "^14.2.22",
     "next-nprogress-bar": "^2.4.3",
