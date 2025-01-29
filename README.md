@@ -1,36 +1,115 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Next.js GoogleBot Crypto Error Reproduction
 
-## Getting Started
+This repository provides a minimal reproduction of a specific issue where GoogleBot requests trigger `DOMException [OperationError]` errors from Node's crypto module in a Next.js 14 application.
 
-First, run the development server:
+## The Issue
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+When GoogleBot crawls the application, random requests result in a `DOMException [OperationError]` from Node's crypto module, causing 500 status codes. This issue:
+
+- **ONLY** occurs with GoogleBot requests
+- Does NOT occur with any other crawlers (e.g., BingBot, YandexBot)
+- Does NOT occur with any other user agents or ASNs
+- Happens randomly across different pages
+- Results in 500 status codes
+- Occurs below application try-catch blocks
+- Happens despite no explicit crypto operations in the codebase
+
+## Error Stack
+
+```
+2025-01-29T08:30:27: DOMException [OperationError]: The operation failed for an operation-specific reason
+    at AESCipherJob.onDone (node:internal/crypto/util:462:19)
+    at AESCipherJob.callbackTrampoline (node:internal/async_hooks:130:17) {
+  digest: '1379131148',
+  [cause]: [Error: Cipher job failed]
+}
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Prerequisites
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- Node.js (issue persists across multiple versions)
+- npm or yarn
+- A domain accessible to GoogleBot
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Setup & Reproduction
 
-## Learn More
+1. Clone this repository:
+```bash
+git clone [repository-url]
+cd nextjs-googlebot-repro
+```
 
-To learn more about Next.js, take a look at the following resources:
+2. Install dependencies:
+```bash
+npm install
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+3. Build the application:
+```bash
+npm run build
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+4. Start the production server:
+```bash
+npm start
+```
 
-## Deploy on Vercel
+5. Deploy to a production environment accessible to GoogleBot
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+6. Verify GoogleBot access:
+   - Use Google Search Console to submit URLs for crawling
+   - OR use the "Fetch as GoogleBot" feature
+   - Monitor server logs for the crypto error
+   - Verify that ONLY GoogleBot requests trigger the error
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Project Structure
+
+```
+nextjs-googlebot-repro/
+├── src/
+│   ├── app/
+│   │   ├── layout.tsx          # Root layout with metadata
+│   │   ├── page.tsx            # Home page
+│   │   └── [slug]/
+│   │       └── page.tsx        # Dynamic pages
+│   ├── components/
+│   │   ├── ui/
+│   │   │   ├── page-container.tsx
+│   │   │   └── alert.tsx
+│   └── lib/
+│       └── metadata.ts
+```
+
+## Key Implementation Details
+
+The reproduction includes:
+- Server Components with Suspense boundaries
+- Dynamic metadata generation
+- Data fetching patterns
+- Error boundaries
+- Dynamic routes
+
+## Verifying the Issue
+
+1. Deploy the application
+2. Submit multiple URLs to Google Search Console
+3. Monitor server logs for requests from GoogleBot
+4. Observe that:
+   - Only GoogleBot requests trigger the error
+   - The error occurs randomly across different pages
+   - Each error results in a 500 status code
+   - No other crawlers or user agents trigger the error
+
+## Additional Notes
+
+- The error occurs at a level below application try-catch blocks
+- Application error handling cannot catch these errors
+- The issue appears to be related to Next.js's internal crypto operations
+
+## Contributing
+
+If you can provide additional insights or have found similar issues, please:
+1. Create an issue in this repository
+2. Provide your environment details
+3. Share any additional error context
+4. Describe your deployment environment
