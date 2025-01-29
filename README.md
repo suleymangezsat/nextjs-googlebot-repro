@@ -35,7 +35,7 @@ When GoogleBot crawls the application, random requests result in a `DOMException
 
 1. Clone this repository:
 ```bash
-git clone [repository-url]
+git clone https://github.com/suleymangezsat/nextjs-googlebot-repro.git
 cd nextjs-googlebot-repro
 ```
 
